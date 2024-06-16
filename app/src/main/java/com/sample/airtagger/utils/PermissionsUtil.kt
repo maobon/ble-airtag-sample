@@ -4,13 +4,20 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface.OnClickListener
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Build
+import android.provider.Settings
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.core.content.ContextCompat
 import com.sample.airtagger.R
+
+private const val TAG = "PermissionsUtil"
 
 const val RUNTIME_PERMISSIONS_REQUEST_CODE = 100
 
@@ -48,7 +55,10 @@ fun Context.hasRequiredBluetoothPermissions(): Boolean {
 }
 
 fun Activity.requestRelevantRuntimePermissions() {
-    if (hasRequiredBluetoothPermissions()) return
+    if (hasRequiredBluetoothPermissions()) {
+        Log.e(TAG, "requestRelevantRuntimePermissions: please check manifest permission")
+        return
+    }
 
     with(this) {
         when {
@@ -140,3 +150,26 @@ fun Activity.onRequestPermissionsResults(
     }
 }
 
+/**
+ * Check location switch status and enable it.
+ */
+const val LOCATION_RUNTIME_PERMISSIONS_REQUEST_CODE = 101
+
+fun Context.isLocationEnable(): Boolean =
+    with(getSystemService(Context.LOCATION_SERVICE) as LocationManager) {
+        isProviderEnabled(LocationManager.GPS_PROVIDER)
+    }
+
+fun enableLocation(activity: Activity) {
+    activity.isLocationEnable().apply {
+        if (!this) {
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivityForResult(
+                activity,
+                intent,
+                LOCATION_RUNTIME_PERMISSIONS_REQUEST_CODE,
+                null
+            )
+        }
+    }
+}

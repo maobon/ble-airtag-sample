@@ -1,6 +1,6 @@
 package com.sample.airtagger.utils.data;
 
-public class JBytesUtil {
+public class BytesUtil {
 
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 

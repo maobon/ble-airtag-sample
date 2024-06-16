@@ -1,21 +1,19 @@
 package com.sample.airtagger
 
-import android.Manifest
-import android.app.Activity
-import android.bluetooth.BluetoothAdapter
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import androidx.activity.result.contract.ActivityResultContracts
+import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import com.sample.airtagger.ble.BluetoothUtil
 import com.sample.airtagger.databinding.ActivityMainBinding
-import com.sample.airtagger.utils.hasPermission
+import com.sample.airtagger.utils.enableLocation
 import com.sample.airtagger.utils.hasRequiredBluetoothPermissions
+import com.sample.airtagger.utils.isLocationEnable
 import com.sample.airtagger.utils.onRequestPermissionsResults
 import com.sample.airtagger.utils.requestRelevantRuntimePermissions
 
@@ -23,6 +21,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var activityMainBinding: ActivityMainBinding
     private var mService: BleService? = null
+    private lateinit var enablingBluetooth: ActivityResultLauncher<Intent>
+
+    private val bluetoothUtil by lazy {
+        BluetoothUtil(this@MainActivity)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,11 +33,21 @@ class MainActivity : AppCompatActivity() {
         setContentView(activityMainBinding.root)
 
         initViews()
+        initPermissions()
+    }
+
+    private fun initPermissions() {
+        enablingBluetooth = bluetoothUtil.createBluetoothEnablingResult(this, null) {
+            if (!isLocationEnable()) {
+                Log.e(TAG, "location is not enable.")
+                enableLocation(this@MainActivity)
+            }
+        }
     }
 
     private fun initViews() {
         activityMainBinding.btnTest.setOnClickListener {
-            scan()
+            launchScanning()
         }
     }
 
@@ -43,25 +56,15 @@ class MainActivity : AppCompatActivity() {
 
         bindService(Intent(this, BleService::class.java), object : ServiceConnection {
             override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                Log.d(TAG, "bluetooth LE service bind successfully")
                 mService = (service as BleService.LocalBinder).getService()
             }
 
             override fun onServiceDisconnected(name: ComponentName?) {
+                Log.d(TAG, "bluetooth LE service unbind")
                 mService = null
             }
         }, Context.BIND_AUTO_CREATE)
-
-        isBluetoothEnabled {
-            scan()
-        }
-    }
-
-    private fun scan() {
-        if (!hasRequiredBluetoothPermissions()) {
-            requestRelevantRuntimePermissions()
-        } else {
-            startBluetoothScan()
-        }
     }
 
     override fun onRequestPermissionsResult(
@@ -69,42 +72,48 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         onRequestPermissionsResults(requestCode, permissions, grantResults, null) {
-            startBluetoothScan()
+            Log.d(TAG, "onRequestPermissionsResult: runtime permissions is ready.")
+            checkSwitches()
         }
     }
 
-    private fun startBluetoothScan(){
-        mService?.startBleScan()
+    private fun launchScanning() {
+        if (!hasRequiredBluetoothPermissions()) {
+            Log.d(TAG, "scan: request runtime permissions")
+            requestRelevantRuntimePermissions()
+        } else {
+            checkSwitches()
+        }
     }
 
-    /**
-     * Prompts the user to enable Bluetooth via a system dialog.
-     *
-     * For Android 12+, [Manifest.permission.BLUETOOTH_CONNECT] is required to use
-     * the [BluetoothAdapter.ACTION_REQUEST_ENABLE] intent.
-     */
-    private fun isBluetoothEnabled(unexpected: (() -> Unit)? = null, expect: () -> Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-            && !hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        ) {
-            // Insufficient permission to prompt for Bluetooth enabling
-            // Log.d(TAG, "Insufficient permission to prompt for Bluetooth enabling")
-            unexpected?.invoke()
+    private fun checkSwitches() {
+        if (!bluetoothUtil.isBluetoothEnable()) {
+            Log.e(TAG, "enableSwitches: bluetooth is not enable.")
+            bluetoothUtil.enableBluetooth(enablingBluetooth)
             return
         }
 
-        if (!BluetoothUtil(this@MainActivity).isBluetoothEnable()) {
-            Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE).apply {
-                registerForActivityResult(
-                    ActivityResultContracts.StartActivityForResult()
-                ) {
-                    if (it.resultCode == Activity.RESULT_OK) {
-                        expect()
-                    } else {
-                        unexpected?.invoke()
-                    }
-                }.launch(this)
-            }
+        if (!isLocationEnable()) {
+            Log.e(TAG, "enableSwitches: location is not enable")
+            enableLocation(this@MainActivity)
+            return
         }
+
+        startBluetoothScan()
+    }
+
+    private fun startBluetoothScan() {
+        if (bluetoothUtil.isBluetoothEnable() && isLocationEnable()) {
+            mService?.startBleScan()
+        } else {
+            Log.e(
+                TAG, "startBluetoothScan: bluetooth or location switch not turn on. " +
+                        "scanning progress canceled."
+            )
+        }
+    }
+
+    companion object {
+        private const val TAG = "MainActivity"
     }
 }

@@ -9,6 +9,8 @@ public class BeaconConst {
     public static final int MANUFACTURER_ID = 76;
 
     public static final String MANUFACTURE_DATA_UUID = "74278bda-b644-4520-8f0c-720eaf059935";
+    public static final int MANUFACTURE_DATA_MAJOR = 1;
+    public static final int MANUFACTURE_DATA_MINOR = 2;
 
     // the manufacturer data byte is the filter!
     private static final byte[] manufacturerData = new byte[]
@@ -57,10 +59,10 @@ public class BeaconConst {
         System.arraycopy(ConversionUtils.UuidToByteArray(teslaUUID), 0, manufacturerData, 2, 16);
 
         // copy major into data array
-        // System.arraycopy(ConversionUtils.integerToByteArray(11488), 0, manufacturerData, 18, 2);
+        System.arraycopy(ConversionUtils.integerToByteArray(MANUFACTURE_DATA_MAJOR), 0, manufacturerData, 18, 2);
 
         // copy minor into data array
-        // System.arraycopy(ConversionUtils.integerToByteArray(24252), 0, manufacturerData, 20, 2);
+        System.arraycopy(ConversionUtils.integerToByteArray(MANUFACTURE_DATA_MINOR), 0, manufacturerData, 20, 2);
 
         return manufacturerData;
     }

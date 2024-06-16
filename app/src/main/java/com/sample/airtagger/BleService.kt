@@ -63,30 +63,27 @@ class BleService : Service() {
                     ).build()
                 )
             }
-            mBluetoothUtil.mScanner.startScan(filters, getScanSettings(), mScanResultCallback)
+            mBluetoothUtil.mLeScanner.startScan(filters, getScanSettings(), mScanResultCallback)
         }
     }
 
     private fun stopBleScan() {
         if (mScanning) {
             Log.d(TAG, "stopBleScan: stop scan")
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
-                != PackageManager.PERMISSION_GRANTED
-            )
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED){
+                Log.e(TAG, "stopBleScan: scanning permission is not granted")
                 return
+            }
 
             mScanning = false
-            mBluetoothUtil.mScanner.stopScan(mScanResultCallback)
+            mBluetoothUtil.mLeScanner.stopScan(mScanResultCallback)
         }
     }
 
     private fun getScanSettings(): ScanSettings {
         return ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
             .setReportDelay(0).build()
-    }
-
-    companion object {
-        private const val TAG = "BluetoothLowEnergyServi"
     }
 
     private val mScanResultCallback by lazy {
@@ -110,6 +107,10 @@ class BleService : Service() {
                 TODO("Not yet implemented")
             }
         })
+    }
+
+    companion object {
+        private const val TAG = "BleService"
     }
 
 }
