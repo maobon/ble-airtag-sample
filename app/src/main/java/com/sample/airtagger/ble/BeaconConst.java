@@ -14,13 +14,15 @@ public class BeaconConst {
     public static final int MANUFACTURE_DATA_MINOR = 2;
 
     // service
-    public static final String SERVICE_UUID = "00001803-494c-4f47-4943-544543480000";
-    public static final String CHARACTERISTIC_WRITE_UUID = "00001805-494c-4f47-4943-544543480000";
-    public static final String CHARACTERISTIC_NOTIFY_UUID = "00001804-494c-4f47-4943-544543480000";
+    private static final String SERVICE = "00001803-494c-4f47-4943-544543480000";
+    private static final String CHARACTERISTIC_WRITE = "00001805-494c-4f47-4943-544543480000";
+    private static final String CHARACTERISTIC_NOTIFY = "00001804-494c-4f47-4943-544543480000";
+    private static final String CLIENT_CHARACTERISTIC_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
 
-    public static final UUID SERVICE = UUID.fromString(SERVICE_UUID);
-    public static final UUID CHARACTERISTIC_WRITE = UUID.fromString(CHARACTERISTIC_WRITE_UUID);
-    public static final UUID CHARACTERISTIC_NOTIFY = UUID.fromString(CHARACTERISTIC_NOTIFY_UUID);
+    public static final UUID SERVICE_UUID = UUID.fromString(SERVICE);
+    public static final UUID CHARACTERISTIC_WRITE_UUID = UUID.fromString(CHARACTERISTIC_WRITE);
+    public static final UUID CHARACTERISTIC_NOTIFY_UUID = UUID.fromString(CHARACTERISTIC_NOTIFY);
+    public static final UUID CLIENT_CHARACTERISTIC_DESCRIPTOR_UUID = UUID.fromString(CLIENT_CHARACTERISTIC_DESCRIPTOR);
 
 
     // the manufacturer data byte is the filter!

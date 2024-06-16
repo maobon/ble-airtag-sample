@@ -43,17 +43,19 @@ class GattCallback(
             printGattTable()
             // Consider connection setup as complete here
 
-            val service = getService(BeaconConst.SERVICE)
-            val characteristicTx = service.run {
-                 getCharacteristic(BeaconConst.CHARACTERISTIC_WRITE)
+            // iBeacon
+            // read characteristic
+            // enable notification
+            val service = getService(BeaconConst.SERVICE_UUID)
+            val writeCharacteristic = service.run {
+                 getCharacteristic(BeaconConst.CHARACTERISTIC_WRITE_UUID)
             }
 
-            val characteristicRx = service.run {
-                getCharacteristic(BeaconConst.CHARACTERISTIC_NOTIFY)
+            val notifyCharacteristic = service.run {
+                getCharacteristic(BeaconConst.CHARACTERISTIC_NOTIFY_UUID)
             }
-            gatt.setCharacteristicNotification(characteristicRx, true)
 
-            mStatusListener.onGetCharacteristics(characteristicTx)
+            mStatusListener.onGetCharacteristics(writeCharacteristic, notifyCharacteristic)
         }
     }
 

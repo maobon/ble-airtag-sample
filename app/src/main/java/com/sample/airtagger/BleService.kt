@@ -19,7 +19,6 @@ import com.sample.airtagger.ble.ConnectionStateListener
 import com.sample.airtagger.ble.GattCallback
 import com.sample.airtagger.ble.GattOperation
 import com.sample.airtagger.ble.ScanResultCallback
-import com.sample.airtagger.utils.data.BytesUtil
 
 class BleService : Service() {
 
@@ -72,7 +71,11 @@ class BleService : Service() {
         if (mScanning) {
             Log.d(TAG, "stopBleScan: stop scan")
 
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED){
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_SCAN
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 Log.e(TAG, "stopBleScan: scanning permission is not granted")
                 return
             }
@@ -104,11 +107,15 @@ class BleService : Service() {
             }
 
             override fun onGetCharacteristics(
-                tx: BluetoothGattCharacteristic
+                write: BluetoothGattCharacteristic,
+                notify: BluetoothGattCharacteristic
             ) {
-                // test write something ...
-                val bytes = BytesUtil.hexToBytes("11")
-                this@BleService.mGattOperation?.writeCharacteristic(tx, bytes)
+                Log.d(TAG, "onGetCharacteristics: get write and notify characteristics")
+
+                this@BleService.mGattOperation?.enableNotifications(
+                    notify,
+                    BeaconConst.CLIENT_CHARACTERISTIC_DESCRIPTOR_UUID
+                )
             }
         })
     }
