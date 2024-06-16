@@ -7,6 +7,6 @@ interface ConnectionStateListener {
 
     fun onConnected(gatt: BluetoothGatt)
 
-    fun onGetCharacteristics(tx: BluetoothGattCharacteristic, rx: BluetoothGattCharacteristic)
+    fun onGetCharacteristics(tx: BluetoothGattCharacteristic)
 
 }

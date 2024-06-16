@@ -14,7 +14,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.sample.airtagger.utils.hasPermission
 
-
 class BluetoothUtil(
     private val context: Context
 ) {

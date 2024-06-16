@@ -19,6 +19,7 @@ import com.sample.airtagger.ble.ConnectionStateListener
 import com.sample.airtagger.ble.GattCallback
 import com.sample.airtagger.ble.GattOperation
 import com.sample.airtagger.ble.ScanResultCallback
+import com.sample.airtagger.utils.data.BytesUtil
 
 class BleService : Service() {
 
@@ -92,19 +93,22 @@ class BleService : Service() {
 
     // bluetooth gatt callback result: onConnectionStateChange ...
     private val mGattCallback by lazy {
+
         // custom interface function
         GattCallback(object : ConnectionStateListener {
             override fun onConnected(gatt: BluetoothGatt) {
+                Log.d(TAG, "onConnected: iBeacon connected successfully")
                 val operation = GattOperation(gatt)
                 operation.discoveryServices()
                 this@BleService.mGattOperation = operation
             }
 
             override fun onGetCharacteristics(
-                tx: BluetoothGattCharacteristic,
-                rx: BluetoothGattCharacteristic
+                tx: BluetoothGattCharacteristic
             ) {
-                TODO("Not yet implemented")
+                // test write something ...
+                val bytes = BytesUtil.hexToBytes("11")
+                this@BleService.mGattOperation?.writeCharacteristic(tx, bytes)
             }
         })
     }

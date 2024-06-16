@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothProfile
 import android.util.Log
+import com.sample.airtagger.utils.data.BytesUtil
 
 @Suppress("all")
 class GattCallback(
@@ -42,22 +43,17 @@ class GattCallback(
             printGattTable()
             // Consider connection setup as complete here
 
-            // xiaomi using for test
-            // val xiaomiService = getService(XIAOMI_ENV_SENSOR_SERVICE_UUID)
-            // val xiaomiCharacteristic = xiaomiService.run {
-            //     getCharacteristic(XIAOMI_ENV_SENSOR_CHARACTERISTIC_UUID)
-            // }
-            // mStatusListener.onGetCharacteristics(xiaomiCharacteristic, xiaomiCharacteristic)
+            val service = getService(BeaconConst.SERVICE)
+            val characteristicTx = service.run {
+                 getCharacteristic(BeaconConst.CHARACTERISTIC_WRITE)
+            }
 
-            // tesla
-            // val teslaService = getService(TESLA_SERVICE_UUID)
-            // val characteristicTx = teslaService.run {
-            //     getCharacteristic(TESLA_TX_CHARACTERISTIC_UUID)
-            // }
-            // val characteristicRx = teslaService.run {
-            //     getCharacteristic(TESLA_RX_CHARACTERISTIC_UUID)
-            // }
-            // mStatusListener.onGetCharacteristics(characteristicTx, characteristicRx)
+            val characteristicRx = service.run {
+                getCharacteristic(BeaconConst.CHARACTERISTIC_NOTIFY)
+            }
+            gatt.setCharacteristicNotification(characteristicRx, true)
+
+            mStatusListener.onGetCharacteristics(characteristicTx)
         }
     }
 
@@ -65,11 +61,10 @@ class GattCallback(
     override fun onCharacteristicRead(
         gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int
     ) {
-
         with(characteristic) {
             when (status) {
                 BluetoothGatt.GATT_SUCCESS -> {
-                    // Log.i(TAG, "Read characteristic --> $uuid:\n${value.toHexString()}")
+                    Log.i(TAG, "Read characteristic --> $uuid:\n${BytesUtil.bytesToHex(value)}")
                 }
 
                 BluetoothGatt.GATT_READ_NOT_PERMITTED -> {
@@ -91,10 +86,10 @@ class GattCallback(
     ) {
         val uuid = characteristic.uuid
         when (status) {
-            // BluetoothGatt.GATT_SUCCESS -> {
-            //     val hexString = value.toHexString()
-            //     Log.i(TAG, "Read characteristic $uuid:\n $hexString")
-            // }
+            BluetoothGatt.GATT_SUCCESS -> {
+                val hexString = BytesUtil.bytesToHex(value)
+                Log.i(TAG, "Read characteristic $uuid:\n $hexString")
+            }
 
             BluetoothGatt.GATT_READ_NOT_PERMITTED -> {
                 Log.e(TAG, "Read not permitted for $uuid!")
@@ -111,19 +106,19 @@ class GattCallback(
         gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic
     ) {
         with(characteristic) {
-            // Log.i(TAG, "Characteristic $uuid changed | value: ${value.toHexString()}")
-            processReceiveMsg(characteristic, value)
+            Log.i(TAG, "Characteristic $uuid changed | value: ${BytesUtil.bytesToHex(value)}")
+            // processReceiveMsg(characteristic, value)
         }
     }
 
     override fun onCharacteristicChanged(
         gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray
     ) {
-        // val newValueHex = value.toHexString()
-        // with(characteristic) {
-        //     Log.i(TAG, "Characteristic $uuid changed | value: $newValueHex")
-        //     processReceiveMsg(characteristic, value)
-        // }
+        val newValueHex = BytesUtil.bytesToHex(value)
+        with(characteristic) {
+            Log.i(TAG, "Characteristic $uuid changed | value: $newValueHex")
+            processReceiveMsg(characteristic, value)
+        }
     }
 
     private fun processReceiveMsg(characteristic: BluetoothGattCharacteristic, value: ByteArray) {
@@ -132,11 +127,6 @@ class GattCallback(
         //     Log.d(TAG, "received content from vehicle: processReceiveMsg:$fromVCSECMessage")
         //     if (fromVCSECMessage != null)
         //         mStatusListener.onVehicleResponse(fromVCSECMessage)
-        // }
-
-        // xiaomi using for test
-        // else if (characteristic.uuid == XIAOMI_ENV_SENSOR_CHARACTERISTIC_UUID) {
-        //    mStatusListener.onVehicleResponse(value)
         // }
     }
 
