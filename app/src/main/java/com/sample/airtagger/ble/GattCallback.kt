@@ -47,7 +47,7 @@ class GattCallback(
             // get characteristics
             val service = getService(BeaconConst.SERVICE_UUID)
             val writeCharacteristic = service.run {
-                 getCharacteristic(BeaconConst.CHARACTERISTIC_WRITE_UUID)
+                getCharacteristic(BeaconConst.CHARACTERISTIC_WRITE_UUID)
             }
 
             val notifyCharacteristic = service.run {
@@ -108,7 +108,7 @@ class GattCallback(
     ) {
         with(characteristic) {
             Log.i(TAG, "Characteristic $uuid changed | value: ${BytesUtil.bytesToHex(value)}")
-            // processReceiveMsg(characteristic, value)
+            processCharacteristicChanged(characteristic, value)
         }
     }
 
@@ -118,17 +118,19 @@ class GattCallback(
         val newValueHex = BytesUtil.bytesToHex(value)
         with(characteristic) {
             Log.i(TAG, "Characteristic $uuid changed | value: $newValueHex")
-            processReceiveMsg(characteristic, value)
+            processCharacteristicChanged(characteristic, value)
         }
     }
 
-    private fun processReceiveMsg(characteristic: BluetoothGattCharacteristic, value: ByteArray) {
-        // if (characteristic.uuid == TESLA_RX_CHARACTERISTIC_UUID) {
-        //     val fromVCSECMessage: vcsec.FromVCSECMessage? = MessageUtil.autoChaCha(value)
-        //     Log.d(TAG, "received content from vehicle: processReceiveMsg:$fromVCSECMessage")
-        //     if (fromVCSECMessage != null)
-        //         mStatusListener.onVehicleResponse(fromVCSECMessage)
-        // }
+    private fun processCharacteristicChanged(
+        characteristic: BluetoothGattCharacteristic,
+        value: ByteArray
+    ) {
+        if (characteristic.uuid == BeaconConst.CHARACTERISTIC_NOTIFY_UUID) {
+            if (value.isNotEmpty()) {
+                mStatusListener.onCharacteristicChanged(value)
+            }
+        }
     }
 
     companion object {

@@ -19,12 +19,11 @@ class ScanResultCallback(
         // iBeacon
         // get advertising data
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // connectTargetDevice(result.device)
+            connectTargetDevice(result.device)
 
-            val rssi = result.rssi
-            val txPower = result.txPower
-            Log.d(TAG, "onScanResult: rssi=$rssi txPower=$txPower")
-
+            // val rssi = result.rssi
+            // val txPower = result.txPower
+            // Log.d(TAG, "onScanResult: rssi=$rssi txPower=$txPower")
 
             // result.scanRecord?.advertisingDataMap?.get(9).let {
             //     val localName = java.lang.String(it)

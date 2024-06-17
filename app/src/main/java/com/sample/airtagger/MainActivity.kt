@@ -1,14 +1,17 @@
 package com.sample.airtagger
 
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.sample.airtagger.ble.BluetoothUtil
 import com.sample.airtagger.databinding.ActivityMainBinding
 import com.sample.airtagger.utils.enableLocation
@@ -27,6 +30,15 @@ class MainActivity : AppCompatActivity() {
         BluetoothUtil(this@MainActivity)
     }
 
+    private val localBroadcastManager by lazy {
+        LocalBroadcastManager.getInstance(this@MainActivity)
+    }
+
+    private val broadcastReceiver by lazy {
+        InnerBroadcastReceiver()
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -34,6 +46,24 @@ class MainActivity : AppCompatActivity() {
 
         initViews()
         initPermissions()
+        initBroadcastReceiver()
+    }
+
+    private fun initBroadcastReceiver() {
+        IntentFilter().apply {
+            addAction(Action.GATT_CHARACTERISTIC_CHANGED)
+            localBroadcastManager.registerReceiver(broadcastReceiver, this)
+        }
+    }
+
+    /**
+     * Update UI
+     */
+    internal class InnerBroadcastReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val data = intent?.getStringExtra(Action.GATT_CHARACTERISTIC_CHANGED_KEY)
+            Log.w(TAG, "onReceive: data=$data")
+        }
     }
 
     private fun initPermissions() {
@@ -73,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         onRequestPermissionsResults(requestCode, permissions, grantResults, null) {
             Log.d(TAG, "onRequestPermissionsResult: runtime permissions is ready.")
-            checkSwitches()
+            checkBluetoothAndLocationSwitches()
         }
     }
 
@@ -82,11 +112,11 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "scan: request runtime permissions")
             requestRelevantRuntimePermissions()
         } else {
-            checkSwitches()
+            checkBluetoothAndLocationSwitches()
         }
     }
 
-    private fun checkSwitches() {
+    private fun checkBluetoothAndLocationSwitches() {
         if (!bluetoothUtil.isBluetoothEnable()) {
             Log.e(TAG, "enableSwitches: bluetooth is not enable.")
             bluetoothUtil.enableBluetooth(enablingBluetooth)
@@ -111,6 +141,11 @@ class MainActivity : AppCompatActivity() {
                         "scanning progress canceled."
             )
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        localBroadcastManager.unregisterReceiver(broadcastReceiver)
     }
 
     companion object {

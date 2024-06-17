@@ -9,4 +9,6 @@ interface ConnectionStateListener {
 
     fun onGetCharacteristics(write: BluetoothGattCharacteristic, notify: BluetoothGattCharacteristic)
 
+    fun onCharacteristicChanged(bytes: ByteArray)
+
 }
