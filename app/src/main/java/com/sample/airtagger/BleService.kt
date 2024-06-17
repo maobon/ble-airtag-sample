@@ -24,6 +24,7 @@ class BleService : Service() {
 
     private var mScanning = false
     private var mGattOperation: GattOperation? = null
+    private var mWriteCharacteristic: BluetoothGattCharacteristic? = null
 
     private val mBluetoothUtil by lazy {
         BluetoothUtil(this@BleService)
@@ -31,6 +32,10 @@ class BleService : Service() {
 
     private val localBroadcastManager by lazy {
         LocalBroadcastManager.getInstance(this@BleService)
+    }
+
+    private val mScanResultCallback by lazy {
+        ScanResultCallback(this@BleService, mGattCallback)
     }
 
     private val mLocalBinder by lazy {
@@ -88,10 +93,6 @@ class BleService : Service() {
             .setReportDelay(0).build()
     }
 
-    private val mScanResultCallback by lazy {
-        ScanResultCallback(this@BleService, mGattCallback)
-    }
-
     private val mGattCallback by lazy {
         GattCallback(object : ConnectionStateListener {
             // custom interface
@@ -110,7 +111,10 @@ class BleService : Service() {
                     TAG,
                     "ConnectionStateListener onGetCharacteristics: get write and notify characteristics"
                 )
+                // stash write characteristic
+                this@BleService.mWriteCharacteristic = write
 
+                // enable notification
                 this@BleService.mGattOperation?.enableNotifications(
                     notify,
                     BeaconConst.CLIENT_CHARACTERISTIC_DESCRIPTOR_UUID
@@ -123,6 +127,14 @@ class BleService : Service() {
                 sendLocalBroadcast(content)
             }
         })
+    }
+
+    fun writePasscode(payload: ByteArray) {
+        Log.d(TAG, "writePasscode: ")
+        mWriteCharacteristic?.let {
+            Log.d(TAG, "writePasscode: .........................")
+            mGattOperation?.writeCharacteristic(it, payload)
+        } ?: Log.e(TAG, "writePasscode: need connect first.")
     }
 
     fun sendLocalBroadcast(text: String) {

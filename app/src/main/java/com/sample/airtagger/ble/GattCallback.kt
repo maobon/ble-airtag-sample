@@ -29,8 +29,15 @@ class GattCallback(
             }
 
         } else {
+            // todo ..... core .....
             Log.w(TAG, "Error $status encountered for $deviceAddress! Disconnecting...")
             gatt.close()
+
+            // reconnect  ....
+            // if (status == 19){
+            //     Log.d(TAG, "onConnectionStateChange: .... 19 ....")
+            //     gatt.connect()
+            // }
         }
     }
 
@@ -122,6 +129,9 @@ class GattCallback(
         }
     }
 
+    /**
+     * process with receive
+     */
     private fun processCharacteristicChanged(
         characteristic: BluetoothGattCharacteristic,
         value: ByteArray

@@ -19,12 +19,13 @@ import com.sample.airtagger.utils.hasRequiredBluetoothPermissions
 import com.sample.airtagger.utils.isLocationEnable
 import com.sample.airtagger.utils.onRequestPermissionsResults
 import com.sample.airtagger.utils.requestRelevantRuntimePermissions
+import com.sample.airtagger.utils.toast
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var activityMainBinding: ActivityMainBinding
-    private var mService: BleService? = null
     private lateinit var enablingBluetooth: ActivityResultLauncher<Intent>
+    private var mService: BleService? = null
 
     private val bluetoothUtil by lazy {
         BluetoothUtil(this@MainActivity)
@@ -35,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val broadcastReceiver by lazy {
-        InnerBroadcastReceiver()
+        InnerBroadcastReceiver(this@MainActivity)
     }
 
 
@@ -59,10 +60,23 @@ class MainActivity : AppCompatActivity() {
     /**
      * Update UI
      */
-    internal class InnerBroadcastReceiver : BroadcastReceiver() {
+    internal class InnerBroadcastReceiver(
+        private val activity: MainActivity
+    ) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val data = intent?.getStringExtra(Action.GATT_CHARACTERISTIC_CHANGED_KEY)
             Log.w(TAG, "onReceive: data=$data")
+
+            when (data) {
+                "passcode" -> {
+                    val bytes = "123456".toByteArray(Charsets.UTF_8)
+                    activity.mService?.writePasscode(bytes)
+                }
+
+                "successful" -> {
+                    activity.toast("Auth Successful")
+                }
+            }
         }
     }
 
