@@ -10,7 +10,9 @@ import android.bluetooth.le.ScanSettings
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Binder
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.sample.airtagger.ble.BeaconConst
@@ -64,22 +66,18 @@ class BleService : Service() {
                 )
             }
             mBluetoothUtil.mLeScanner.startScan(filters, getScanSettings(), mScanResultCallback)
+
+            // stop scan ...
+            Handler(Looper.getMainLooper()).postDelayed({
+                stopBleScan()
+            }, 10 * 1000L)
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun stopBleScan() {
         if (mScanning) {
             Log.d(TAG, "stopBleScan: stop scan")
-
-            if (ActivityCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_SCAN
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.e(TAG, "stopBleScan: scanning permission is not granted")
-                return
-            }
-
             mScanning = false
             mBluetoothUtil.mLeScanner.stopScan(mScanResultCallback)
         }

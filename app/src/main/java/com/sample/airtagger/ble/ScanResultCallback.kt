@@ -16,9 +16,16 @@ class ScanResultCallback(
     override fun onScanResult(callbackType: Int, result: ScanResult) {
         super.onScanResult(callbackType, result)
 
-        // iBeacon protocol
+        // iBeacon
         // get advertising data
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // connectTargetDevice(result.device)
+
+            val rssi = result.rssi
+            val txPower = result.txPower
+            Log.d(TAG, "onScanResult: rssi=$rssi txPower=$txPower")
+
+
             // result.scanRecord?.advertisingDataMap?.get(9).let {
             //     val localName = java.lang.String(it)
             //     Log.i(TAG, "onScanResult: completeLocalName=$localName")
@@ -28,8 +35,6 @@ class ScanResultCallback(
             //     //     connectTargetDevice(result.device)
             //     // }
             // }
-
-            connectTargetDevice(result.device)
         }
     }
 

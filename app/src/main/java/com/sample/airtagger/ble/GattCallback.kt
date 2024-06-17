@@ -25,7 +25,6 @@ class GattCallback(
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.w(TAG, "Successfully disconnected from $deviceAddress")
-
                 gatt.close()
             }
 
@@ -44,8 +43,8 @@ class GattCallback(
             // Consider connection setup as complete here
 
             // iBeacon
-            // read characteristic
-            // enable notification
+            // get service
+            // get characteristics
             val service = getService(BeaconConst.SERVICE_UUID)
             val writeCharacteristic = service.run {
                  getCharacteristic(BeaconConst.CHARACTERISTIC_WRITE_UUID)
