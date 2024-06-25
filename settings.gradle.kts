@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "AirTagger"
 include(":app")
- 
+include(":app2")
